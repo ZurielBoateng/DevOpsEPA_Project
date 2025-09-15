@@ -317,7 +317,24 @@ func createClient(ctx context.Context, svcAddr string) (*grpc.ClientConn, error)
 	)
 }
 
+func (p *productCatalog) checkProductFailure(ctx context.Context, id string) bool {
+	if id != "OLJCESPC7Z" {
+		return false
+	}
 
+	client := openfeature.NewClient("productCatalog")
+	failureEnabled, _ := client.BooleanValue(
+		ctx, "productCatalogFailure", false, openfeature.EvaluationContext{},
+	)
+	return failureEnabled
+}
+
+func createClient(ctx context.Context, svcAddr string) (*grpc.ClientConn, error) {
+	return grpc.DialContext(ctx, svcAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
+	)
+}
 
 
 
